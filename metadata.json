@@ -1,0 +1,8 @@
+{
+  "name": "MedRise — Medical Student Growth Platform",
+  "description": "A trusted academic resource, career development, and opportunities platform designed for medical students in Egypt.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
