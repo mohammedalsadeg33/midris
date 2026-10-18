@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bookmark, Menu, X, ArrowUpRight, Mail } from 'lucide-react';
+import { Search, Bookmark, Menu, X, Mail } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: string;
@@ -25,6 +25,39 @@ export const Navbar: React.FC<NavbarProps> = ({
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Lock background scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu if viewport resized to desktop width
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const navItems = [
@@ -55,7 +88,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => handleNavClick('home')}
-              className="group text-left flex items-center gap-2.5 focus:outline-none"
+              className="group text-left flex items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF] rounded-lg py-1"
               aria-label="MedRise Home"
             >
               <div className="w-8 h-8 rounded-lg bg-[#176B65] border border-[#A8E6CF]/30 flex items-center justify-center text-white font-bold text-base shadow-sm group-hover:bg-[#1F8880] transition-colors">
@@ -65,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span className="text-xl font-bold tracking-tight text-white group-hover:text-[#A8E6CF] transition-colors whitespace-nowrap">
                   MedRise
                 </span>
-                <span className="text-[10px] tracking-widest uppercase text-[#A8E6CF]/80 font-medium -mt-1 hidden sm:block">
+                <span className="text-[10px] tracking-widest uppercase text-[#A8E6CF] font-medium -mt-1 hidden sm:block">
                   Learn · Connect · Rise
                 </span>
               </div>
@@ -80,10 +113,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`relative py-1 text-sm whitespace-nowrap transition-colors ${
+                  className={`relative py-1 text-sm whitespace-nowrap transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF] rounded ${
                     isActive
                       ? 'text-[#A8E6CF] font-semibold'
-                      : 'text-slate-300 hover:text-white'
+                      : 'text-slate-200 hover:text-white'
                   }`}
                 >
                   {item.label}
@@ -95,18 +128,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Zone 3: Actions (Search, Bookmarks, Mobile Toggle) */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Zone 3: Actions (Search, Bookmarks, Contact, Mobile Toggle) */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Quick Search Trigger */}
             <button
               onClick={onOpenSearch}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-300 bg-[#183C4F]/70 hover:bg-[#183C4F] hover:text-white rounded-lg border border-slate-700/60 transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-100 bg-[#183C4F]/80 hover:bg-[#183C4F] hover:text-white rounded-lg border border-slate-700/80 transition-colors cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
               aria-label="Search resources and opportunities"
               title="Search (Ctrl+K)"
             >
-              <Search className="w-4 h-4 text-slate-300" />
+              <Search className="w-4 h-4 text-slate-200" />
               <span className="hidden sm:inline text-xs">Search directory</span>
-              <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] text-slate-400 bg-[#102C3A] rounded border border-slate-700">
+              <kbd className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] text-slate-300 bg-[#102C3A] rounded border border-slate-700">
                 ⌘K
               </kbd>
             </button>
@@ -114,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Saved Bookmarks Trigger */}
             <button
               onClick={onOpenBookmarks}
-              className="relative p-2 text-slate-300 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer"
+              className="relative p-2.5 text-slate-100 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
               aria-label="View saved bookmarks"
               title="Saved items"
             >
@@ -129,7 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Contact Email Trigger */}
             <a
               href="mailto:mohammedalsadeg33@gmail.com"
-              className="p-2 text-slate-300 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer"
+              className="p-2.5 text-slate-100 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
               aria-label="Contact official email"
               title="Email: mohammedalsadeg33@gmail.com"
             >
@@ -138,9 +171,12 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Mobile Menu Button */}
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 text-slate-300 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors"
-              aria-label="Toggle navigation menu"
+              className="lg:hidden p-2.5 text-slate-100 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+              aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -148,41 +184,101 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Backdrop overlay for outside click to dismiss */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#183C4F] bg-[#102C3A] px-4 pt-3 pb-5 space-y-1 shadow-xl animate-in slide-in-from-top-2 duration-150">
-          <div className="text-[11px] font-medium tracking-wider uppercase text-slate-400 px-3 py-1.5">
-            Navigation Menu
+        <div
+          className="fixed inset-0 top-18 bg-black/50 backdrop-blur-xs z-30 lg:hidden transition-opacity duration-200"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile Navigation Dropdown Menu */}
+      <div
+        id="mobile-navigation-menu"
+        role="navigation"
+        aria-label="Mobile Navigation"
+        className={`lg:hidden absolute top-full left-0 right-0 z-40 bg-[#102C3A] border-b border-[#183C4F] shadow-2xl transition-all duration-200 ease-out ${
+          mobileMenuOpen
+            ? 'opacity-100 translate-y-0 visible pointer-events-auto'
+            : 'opacity-0 -translate-y-2 invisible pointer-events-none'
+        }`}
+      >
+        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain px-4 pt-3 pb-5 space-y-3">
+          {/* Menu Header Label */}
+          <div className="flex items-center justify-between text-xs font-semibold tracking-wider uppercase text-slate-200 px-3 py-1.5 border-b border-[#183C4F]/70">
+            <span>Navigation Menu</span>
+            <span className="text-[11px] text-[#A8E6CF] font-medium tracking-normal capitalize">MedRise Egypt</span>
           </div>
-          {navItems.map((item) => {
-            const isActive = currentTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
-                  isActive
-                    ? 'bg-[#176B65] text-white font-semibold'
-                    : 'text-slate-200 hover:bg-[#183C4F] hover:text-white'
-                }`}
-              >
-                <span>{item.label}</span>
-                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#A8E6CF]" />}
-              </button>
-            );
-          })}
-          <div className="pt-3 border-t border-[#183C4F] flex items-center justify-between px-3 text-xs text-slate-400">
-            <span>Egypt Medical Student Hub</span>
+
+          {/* Nav Items */}
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full text-left px-3.5 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF] ${
+                    isActive
+                      ? 'bg-[#176B65] text-white font-semibold shadow-xs'
+                      : 'text-slate-100 hover:bg-[#183C4F] hover:text-white active:bg-[#183C4F]/90'
+                  }`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span className="text-sm tracking-wide">{item.label}</span>
+                  {isActive && (
+                    <span className="flex items-center gap-1.5 text-xs text-[#A8E6CF] font-semibold">
+                      <span>Active</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#A8E6CF]" />
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Quick Hub Shortcuts inside Mobile Menu */}
+          <div className="pt-2 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenSearch();
+              }}
+              className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#183C4F]/70 hover:bg-[#183C4F] text-slate-100 text-xs font-medium border border-slate-700/70 min-h-[44px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+            >
+              <Search className="w-3.5 h-3.5 text-slate-300" />
+              <span>Search Hub</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenBookmarks();
+              }}
+              className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#183C4F]/70 hover:bg-[#183C4F] text-slate-100 text-xs font-medium border border-slate-700/70 min-h-[44px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+            >
+              <Bookmark className="w-3.5 h-3.5 text-[#A8E6CF]" />
+              <span>Saved Items ({bookmarksCount})</span>
+            </button>
+          </div>
+
+          {/* Mobile Footer Info & Contact */}
+          <div className="pt-3 border-t border-[#183C4F] flex items-center justify-between px-3 text-xs text-slate-300">
+            <span className="text-slate-300 font-medium">Egypt Medical Student Hub</span>
             <a
               href="mailto:mohammedalsadeg33@gmail.com"
-              className="text-[#A8E6CF] hover:underline flex items-center gap-1.5 font-medium"
+              className="text-[#A8E6CF] hover:text-white hover:underline flex items-center gap-1.5 font-semibold py-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A8E6CF]"
+              aria-label="Contact official email"
             >
               <Mail className="w-3.5 h-3.5" />
               <span>Contact</span>
             </a>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 };
