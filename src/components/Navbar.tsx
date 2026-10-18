@@ -129,11 +129,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Zone 3: Actions (Search, Bookmarks, Contact, Mobile Toggle) */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Quick Search Trigger */}
             <button
               onClick={onOpenSearch}
-              className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-100 bg-[#183C4F]/80 hover:bg-[#183C4F] hover:text-white rounded-lg border border-slate-700/80 transition-colors cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 text-xs font-medium text-slate-100 bg-[#183C4F]/80 hover:bg-[#183C4F] hover:text-white rounded-lg border border-slate-700/80 transition-colors cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
               aria-label="Search resources and opportunities"
               title="Search (Ctrl+K)"
             >
@@ -159,10 +159,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </button>
 
-            {/* Contact Email Trigger */}
+            {/* Contact Email Trigger (Desktop & Tablet) */}
             <a
               href="mailto:mohammedalsadeg33@gmail.com"
-              className="p-2.5 text-slate-100 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+              className="hidden sm:flex p-2.5 text-slate-100 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
               aria-label="Contact official email"
               title="Email: mohammedalsadeg33@gmail.com"
             >
@@ -187,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* Backdrop overlay for outside click to dismiss */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 top-18 bg-black/50 backdrop-blur-xs z-30 lg:hidden transition-opacity duration-200"
+          className="fixed inset-0 top-[4.5rem] bg-black/50 backdrop-blur-xs z-30 lg:hidden transition-opacity duration-200"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         />
@@ -204,7 +204,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             : 'opacity-0 -translate-y-2 invisible pointer-events-none'
         }`}
       >
-        <div className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain px-4 pt-3 pb-5 space-y-3">
+        <div className="max-h-[calc(100vh-4.5rem)] max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain px-4 pt-3 pb-5 space-y-3">
           {/* Menu Header Label */}
           <div className="flex items-center justify-between text-xs font-semibold tracking-wider uppercase text-slate-200 px-3 py-1.5 border-b border-[#183C4F]/70">
             <span>Navigation Menu</span>
@@ -249,7 +249,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
               className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#183C4F]/70 hover:bg-[#183C4F] text-slate-100 text-xs font-medium border border-slate-700/70 min-h-[44px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
             >
-              <Search className="w-3.5 h-3.5 text-slate-300" />
+              <Search className="w-3.5 h-3.5 text-slate-200" />
               <span>Search Hub</span>
             </button>
             <button
@@ -270,7 +270,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-slate-300 font-medium">Egypt Medical Student Hub</span>
             <a
               href="mailto:mohammedalsadeg33@gmail.com"
-              className="text-[#A8E6CF] hover:text-white hover:underline flex items-center gap-1.5 font-semibold py-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A8E6CF]"
+              className="text-[#A8E6CF] hover:text-white hover:underline flex items-center gap-1.5 font-semibold py-1.5 px-2.5 rounded-md hover:bg-[#183C4F]/60 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-[#A8E6CF]"
               aria-label="Contact official email"
             >
               <Mail className="w-3.5 h-3.5" />
