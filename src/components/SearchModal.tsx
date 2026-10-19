@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, X, BookOpen, Compass, FileText, ArrowRight, RotateCcw, ExternalLink } from 'lucide-react';
-import { Resource, Opportunity, Article } from '../types';
+import { Search, X, BookOpen, Compass, FileText, ArrowRight, RotateCcw, ExternalLink, GraduationCap } from 'lucide-react';
+import { Resource, Opportunity, Article, Course } from '../types';
 import { RESOURCES } from '../data/resources';
 import { OPPORTUNITIES } from '../data/opportunities';
 import { ARTICLES } from '../data/articles';
+import { COURSES } from '../data/courses';
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onNavigateToTab
 }) => {
   const [query, setQuery] = useState('');
-  const [filterType, setFilterType] = useState<'all' | 'resources' | 'opportunities' | 'articles'>('all');
+  const [filterType, setFilterType] = useState<'all' | 'courses' | 'resources' | 'opportunities' | 'articles'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -56,7 +57,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   }, []);
 
   // Filtered Results
-  const { matchedResources, matchedOpportunities, matchedArticles } = useMemo(() => {
+  const { matchedCourses, matchedResources, matchedOpportunities, matchedArticles } = useMemo(() => {
     const q = query.toLowerCase().trim();
 
     const matchesSearch = (text: string) => text.toLowerCase().includes(q);
@@ -97,14 +98,28 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       );
     });
 
+    const crs = COURSES.filter((c) => {
+      if (selectedCategory !== 'all' && c.categoryLabel !== selectedCategory) return false;
+      if (!q) return true;
+      return (
+        matchesSearch(c.title) ||
+        matchesSearch(c.description) ||
+        matchesSearch(c.provider) ||
+        matchesSearch(c.categoryLabel) ||
+        c.keyTopics.some((k) => matchesSearch(k))
+      );
+    });
+
     return {
+      matchedCourses: filterType === 'all' || filterType === 'courses' ? crs : [],
       matchedResources: filterType === 'all' || filterType === 'resources' ? res : [],
       matchedOpportunities: filterType === 'all' || filterType === 'opportunities' ? opp : [],
       matchedArticles: filterType === 'all' || filterType === 'articles' ? art : []
     };
   }, [query, filterType, selectedCategory]);
 
-  const totalResults = matchedResources.length + matchedOpportunities.length + matchedArticles.length;
+  const totalResults =
+    matchedCourses.length + matchedResources.length + matchedOpportunities.length + matchedArticles.length;
 
   if (!isOpen) return null;
 
@@ -155,7 +170,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             <span className="text-slate-400 mr-1 font-medium">Type:</span>
-            {(['all', 'resources', 'opportunities', 'articles'] as const).map((type) => (
+            {(['all', 'courses', 'resources', 'opportunities', 'articles'] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
@@ -204,7 +219,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               <Search className="w-8 h-8 text-slate-300 mx-auto" />
               <h4 className="text-sm font-semibold text-slate-800">No matching medical resources found</h4>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                Try searching for keywords like "Anki", "Cochrane", "CV", "Kasr Al-Ainy", "Exchange", or reset your topic filters.
+                Try searching for keywords like "biostatistics", "English", "Anki", "Cochrane", or reset your topic filters.
               </p>
               <button
                 onClick={handleResetFilters}
@@ -216,6 +231,49 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             </div>
           ) : (
             <>
+              {/* Courses & Video Tracks */}
+              {matchedCourses.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5">
+                      <GraduationCap className="w-3.5 h-3.5 text-[#176B65]" />
+                      <span>Courses & Video Tracks ({matchedCourses.length})</span>
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {matchedCourses.map((crs) => (
+                      <div
+                        key={crs.id}
+                        onClick={() => {
+                          onClose();
+                          onNavigateToTab('courses');
+                        }}
+                        className="p-3.5 rounded-xl border border-slate-200/80 hover:border-[#176B65]/40 hover:bg-slate-50/70 transition-all cursor-pointer group flex items-start justify-between gap-3"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                            <span className="font-semibold text-[#176B65]">{crs.categoryLabel}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>{crs.provider}</span>
+                            <span aria-hidden="true">·</span>
+                            <span className="font-medium text-teal-700 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                              {crs.statusLabel}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-semibold text-slate-900 group-hover:text-[#176B65] transition-colors">
+                            {crs.title}
+                          </h4>
+                          <p className="text-xs text-slate-600 line-clamp-1">
+                            {crs.description}
+                          </p>
+                        </div>
+                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-[#176B65] group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Study & Career Resources */}
               {matchedResources.length > 0 && (
                 <div className="space-y-3">

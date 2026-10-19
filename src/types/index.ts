@@ -102,3 +102,55 @@ export interface CommunityStory {
   tags: string[];
   lessonsLearned: string[];
 }
+
+export type CourseCategoryId = 'clinical-skills' | 'study-academic' | 'research-skills' | 'english-digital';
+
+export type CourseStatus = 'verified' | 'provisional' | 'link-under-verification' | 'coming-soon';
+
+export interface CourseLesson {
+  id: string;
+  title: string;
+  duration?: string;
+  summary?: string;
+  index: number;
+  videoId?: string;
+  youtubeUrl?: string;
+}
+
+export interface Course {
+  id: string;
+  categoryId: CourseCategoryId;
+  categoryLabel: string;
+  title: string;
+  provider: string;
+  instructor?: string;
+  description: string;
+  fullDescription?: string;
+  status: CourseStatus;
+  statusLabel: string;
+  statusNote: string;
+  type: 'playlist' | 'single-video' | 'upcoming';
+  youtubePlaylistUrl?: string;
+  playlistId?: string;
+  youtubeVideoUrl?: string;
+  videoId?: string;
+  lessons?: CourseLesson[];
+  keyTopics: string[];
+  targetAudience: string;
+  language: string;
+  verificationDetails: string;
+}
+
+export interface CourseCategory {
+  id: CourseCategoryId;
+  title: string;
+  shortTitle: string;
+  description: string;
+  intendedFor: string;
+  imageKey: 'courseClinicalSkills' | 'courseResearchSkills' | 'courseEnglishDigital';
+  imageAlt: string;
+  statusBadge?: string;
+  statusType?: 'verified' | 'provisional' | 'verification-required';
+  courseCount: number;
+}
+

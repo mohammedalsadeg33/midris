@@ -4,18 +4,22 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './components/pages/HomePage';
 import { StudySmarterPage } from './components/pages/StudySmarterPage';
 import { CareerDevelopmentPage } from './components/pages/CareerDevelopmentPage';
 import { OpportunitiesPage } from './components/pages/OpportunitiesPage';
+import { CoursesPage } from './components/pages/CoursesPage';
 import { CommunityPage } from './components/pages/CommunityPage';
 import { ResourceDetailModal } from './components/ResourceDetailModal';
 import { ArticleDetailModal } from './components/ArticleDetailModal';
 import { SubmitResourceModal } from './components/SubmitResourceModal';
 import { BookmarksDrawer } from './components/BookmarksDrawer';
 import { SearchModal } from './components/SearchModal';
+import { AuthModal } from './components/auth/AuthModal';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { RESOURCES } from './data/resources';
 import { OPPORTUNITIES } from './data/opportunities';
 import { ARTICLES } from './data/articles';
@@ -23,13 +27,17 @@ import { COMMUNITY_STORIES } from './data/communityStories';
 import { useBookmarks } from './hooks/useBookmarks';
 import { Resource, Article } from './types';
 
-export default function App() {
+function MainAppContent() {
   const [currentTab, setCurrentTab] = useState<string>('home');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  const { notification, clearNotification } = useAuth();
 
   const {
     isBookmarked,
@@ -58,11 +66,50 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleOpenAuth = (mode: 'login' | 'signup') => {
+    setAuthMode(mode);
+    setIsAuthOpen(true);
+  };
+
   const featuredResources = RESOURCES.filter((r) => r.featured);
   const spotlightOpportunities = OPPORTUNITIES.filter((o) => o.featured);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F9F7] text-[#102C3A]">
+      {/* Verification Notification Banner */}
+      {notification && (
+        <div
+          className={`py-3 px-4 text-xs sm:text-sm font-medium transition-all sticky top-0 z-50 shadow-md ${
+            notification.type === 'success'
+              ? 'bg-[#176B65] text-white border-b border-[#A8E6CF]/40'
+              : notification.type === 'error'
+              ? 'bg-red-900 text-red-100 border-b border-red-700'
+              : 'bg-[#183C4F] text-slate-100 border-b border-slate-700'
+          }`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              {notification.type === 'success' ? (
+                <CheckCircle2 className="w-5 h-5 text-[#A8E6CF] shrink-0" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-300 shrink-0" />
+              )}
+              <span className="leading-snug">{notification.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={clearNotification}
+              className="p-1.5 text-white/80 hover:text-white hover:bg-black/20 rounded-lg transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              aria-label="Dismiss notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top Bar / Navigation */}
       <Navbar
         currentTab={currentTab}
@@ -70,6 +117,7 @@ export default function App() {
         onOpenSearch={() => setIsSearchOpen(true)}
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
         bookmarksCount={bookmarksCount}
+        onOpenAuth={handleOpenAuth}
       />
 
       {/* Main Content Area */}
@@ -85,6 +133,14 @@ export default function App() {
             onToggleBookmark={toggleBookmark}
             onSelectResource={(r) => setSelectedResource(r)}
             onSelectArticle={(a) => setSelectedArticle(a)}
+            onOpenAuth={handleOpenAuth}
+          />
+        )}
+
+        {currentTab === 'courses' && (
+          <CoursesPage
+            onOpenSubmit={() => setIsSubmitOpen(true)}
+            onNavigate={handleNavigate}
           />
         )}
 
@@ -165,6 +221,21 @@ export default function App() {
         isOpen={isSubmitOpen}
         onClose={() => setIsSubmitOpen(false)}
       />
+
+      {/* Supabase Authentication Modal */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        initialMode={authMode}
+      />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainAppContent />
+    </AuthProvider>
   );
 }

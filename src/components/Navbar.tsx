@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bookmark, Menu, X, Mail } from 'lucide-react';
+import { Search, Bookmark, Menu, X, Mail, LogIn, UserPlus, LogOut, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
   currentTab: string;
@@ -7,6 +8,7 @@ interface NavbarProps {
   onOpenSearch: () => void;
   onOpenBookmarks: () => void;
   bookmarksCount: number;
+  onOpenAuth: (mode: 'login' | 'signup') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,8 +16,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onNavigate,
   onOpenSearch,
   onOpenBookmarks,
-  bookmarksCount
+  bookmarksCount,
+  onOpenAuth
 }) => {
+  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -62,6 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { id: 'home', label: 'Home' },
+    { id: 'courses', label: 'Courses' },
     { id: 'study-smarter', label: 'Study Smarter' },
     { id: 'career-development', label: 'Career Development' },
     { id: 'opportunities', label: 'Opportunities' },
@@ -106,7 +111,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Zone 2: Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-medium">
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-7 text-sm font-medium">
             {navItems.map((item) => {
               const isActive = currentTab === item.id;
               return (
@@ -168,6 +173,47 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Mail className="w-4 h-4" />
             </a>
+
+            {/* Authentication Buttons (Desktop) */}
+            <div className="hidden md:flex items-center gap-2 border-l border-[#183C4F] pl-2.5 ml-1">
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <div
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#183C4F]/70 text-slate-200 text-xs font-medium border border-slate-700/70 max-w-[150px] truncate"
+                    title={user.email || 'Authenticated User'}
+                  >
+                    <User className="w-3.5 h-3.5 text-[#A8E6CF] shrink-0" />
+                    <span className="truncate">{user.email ? user.email.split('@')[0] : 'Account'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    className="p-2 text-slate-300 hover:text-red-400 hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                    aria-label="Log Out"
+                    title="Log Out of MedRise"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => onOpenAuth('login')}
+                    className="px-3 py-2 text-xs font-semibold text-slate-200 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onOpenAuth('signup')}
+                    className="px-3.5 py-2 text-xs font-bold text-[#102C3A] bg-[#A8E6CF] hover:bg-[#95d6bf] rounded-lg transition-colors cursor-pointer min-h-[44px] flex items-center shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -237,6 +283,59 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               );
             })}
+          </div>
+
+          {/* Mobile Authentication Section */}
+          <div className="pt-2 border-t border-[#183C4F]/70">
+            {user ? (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#0E2430] border border-[#183C4F] text-xs text-slate-200">
+                  <div className="w-7 h-7 rounded-lg bg-[#176B65] flex items-center justify-center text-[#A8E6CF] font-bold shrink-0">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Logged in</p>
+                    <p className="font-semibold text-white truncate">{user.email}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    signOut();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-950/70 text-red-200 border border-red-800/40 text-xs font-semibold min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out of MedRise</span>
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAuth('login');
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#183C4F] hover:bg-[#1f4c63] text-white text-xs font-semibold border border-slate-700 min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+                >
+                  <LogIn className="w-4 h-4 text-[#A8E6CF]" />
+                  <span>Log In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAuth('signup');
+                  }}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#A8E6CF] hover:bg-[#95d6bf] text-[#102C3A] text-xs font-bold min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Sign Up</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Quick Hub Shortcuts inside Mobile Menu */}

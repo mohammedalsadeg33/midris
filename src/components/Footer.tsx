@@ -104,6 +104,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenSubmit }) => {
               </li>
               <li>
                 <button
+                  onClick={() => { onNavigate('courses'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="hover:text-white transition-colors"
+                >
+                  Courses & Video Tracks
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => { onNavigate('study-smarter'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                   className="hover:text-white transition-colors"
                 >

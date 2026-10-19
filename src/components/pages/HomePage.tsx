@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, BookOpen, Compass, Award, Users, Sparkles, CheckCircle2, Bookmark, ExternalLink } from 'lucide-react';
+import { ArrowRight, BookOpen, Compass, Award, Users, Sparkles, CheckCircle2, Bookmark, ExternalLink, LogIn, UserPlus } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import { Resource, Opportunity, Article, CommunityStory } from '../../types';
 import { ResourceCard } from '../ResourceCard';
 import { OpportunityCard } from '../OpportunityCard';
@@ -15,6 +16,7 @@ interface HomePageProps {
   onToggleBookmark: (id: string, type: 'resource' | 'opportunity') => void;
   onSelectResource: (resource: Resource) => void;
   onSelectArticle: (article: Article) => void;
+  onOpenAuth?: (mode: 'login' | 'signup') => void;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
@@ -26,8 +28,10 @@ export const HomePage: React.FC<HomePageProps> = ({
   isBookmarked,
   onToggleBookmark,
   onSelectResource,
-  onSelectArticle
+  onSelectArticle,
+  onOpenAuth
 }) => {
+  const { user } = useAuth();
   return (
     <div className="space-y-16 sm:space-y-24 pb-20">
       {/* SECTION B: HERO SECTION */}
@@ -49,11 +53,49 @@ export const HomePage: React.FC<HomePageProps> = ({
                 Discover smarter ways to study, build your professional future, and find opportunities that help you grow beyond the classroom.
               </p>
 
-              {/* Action Buttons */}
+              {/* Visible Authentication Action Section */}
+              <div className="pt-1">
+                {!user ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-row flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => onOpenAuth?.('signup')}
+                        className="flex-1 sm:flex-initial px-6 py-3.5 text-sm font-bold text-white bg-[#176B65] hover:bg-[#11534E] active:bg-[#0D3E3A] rounded-xl transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#176B65] focus-visible:ring-offset-2"
+                        aria-label="Sign Up for MedRise"
+                      >
+                        <UserPlus className="w-4 h-4 text-[#A8E6CF]" />
+                        <span>Sign Up</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => onOpenAuth?.('login')}
+                        className="flex-1 sm:flex-initial px-6 py-3.5 text-sm font-semibold text-[#102C3A] hover:text-[#176B65] bg-white hover:bg-slate-50 border-2 border-slate-300 hover:border-[#176B65] rounded-xl transition-all shadow-xs hover:shadow-sm flex items-center justify-center gap-2 cursor-pointer min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#176B65] focus-visible:ring-offset-2"
+                        aria-label="Login to MedRise"
+                      >
+                        <LogIn className="w-4 h-4 text-[#176B65]" />
+                        <span>Login</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                      Free account for Egyptian medical students · Access verified playlists & opportunities
+                    </p>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2.5 text-xs text-slate-700 bg-white border border-slate-200/90 rounded-xl px-4 py-2.5 shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span>Signed in as <strong className="text-[#102C3A]">{user.email}</strong></span>
+                  </div>
+                )}
+              </div>
+
+              {/* Directory Navigation Buttons */}
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={() => onNavigate('study-smarter')}
-                  className="px-6 py-3 text-sm font-semibold text-white bg-[#176B65] hover:bg-[#11534E] rounded-xl transition-all shadow-sm hover:shadow flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#176B65] bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 rounded-xl transition-all flex items-center gap-2 cursor-pointer min-h-[42px]"
                 >
                   <span>Explore Resources</span>
                   <ArrowRight className="w-4 h-4" />
@@ -61,7 +103,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                 <button
                   onClick={() => onNavigate('opportunities')}
-                  className="px-6 py-3 text-sm font-semibold text-[#102C3A] hover:text-[#176B65] bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 hover:text-[#176B65] bg-slate-100 hover:bg-slate-200/80 border border-slate-200/80 rounded-xl transition-all flex items-center gap-2 cursor-pointer min-h-[42px]"
                 >
                   <span>Discover Opportunities</span>
                   <Compass className="w-4 h-4 text-[#176B65]" />
