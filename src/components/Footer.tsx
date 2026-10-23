@@ -48,9 +48,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenSubmit }) => {
   };
 
   return (
-    <footer className="bg-[#102C3A] text-slate-300 border-t border-[#183C4F] pt-14 pb-12">
+    <footer className="bg-[#102C3A] dark:bg-[#091720] text-slate-300 border-t border-[#183C4F] dark:border-[#142B38] pt-14 pb-12 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#183C4F]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#183C4F] dark:border-[#142B38]">
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">

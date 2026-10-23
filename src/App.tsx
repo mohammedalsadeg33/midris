@@ -19,7 +19,9 @@ import { SubmitResourceModal } from './components/SubmitResourceModal';
 import { BookmarksDrawer } from './components/BookmarksDrawer';
 import { SearchModal } from './components/SearchModal';
 import { AuthModal } from './components/auth/AuthModal';
+import { AccountSettingsModal } from './components/auth/AccountSettingsModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { RESOURCES } from './data/resources';
 import { OPPORTUNITIES } from './data/opportunities';
 import { ARTICLES } from './data/articles';
@@ -33,6 +35,7 @@ function MainAppContent() {
   const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
   const [isSubmitOpen, setIsSubmitOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [selectedResource, setSelectedResource] = useState<Resource | null>(null);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -75,7 +78,7 @@ function MainAppContent() {
   const spotlightOpportunities = OPPORTUNITIES.filter((o) => o.featured);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F9F7] text-[#102C3A]">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-app)] text-[var(--text-main)] dark:bg-[#0B1922] dark:text-[#F1F5F9] transition-colors duration-200">
       {/* Verification Notification Banner */}
       {notification && (
         <div
@@ -118,6 +121,7 @@ function MainAppContent() {
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
         bookmarksCount={bookmarksCount}
         onOpenAuth={handleOpenAuth}
+        onOpenSettings={() => setIsSettingsOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -228,14 +232,22 @@ function MainAppContent() {
         onClose={() => setIsAuthOpen(false)}
         initialMode={authMode}
       />
+
+      {/* Account Profile & Security Settings Modal */}
+      <AccountSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
     </div>
   );
 }
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainAppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainAppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

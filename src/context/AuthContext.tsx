@@ -6,6 +6,12 @@ interface AuthNotification {
   message: string;
 }
 
+export interface UserProfileData {
+  displayName?: string;
+  medicalSchool?: string;
+  academicStage?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -17,6 +23,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ success: boolean; requiresVerification?: boolean; error?: string }>;
   signOut: () => Promise<void>;
   resendVerification: (email: string) => Promise<{ success: boolean; error?: string }>;
+  updateUserProfile: (data: UserProfileData) => Promise<{ success: boolean; error?: string }>;
+  updateUserPassword: (password: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -296,6 +304,70 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Update user profile metadata (Display Name, Medical School, Academic Stage)
+  const updateUserProfile = async (data: UserProfileData) => {
+    if (!isSupabaseConfigured) {
+      if (user) {
+        const updatedUser = {
+          ...user,
+          user_metadata: {
+            ...user.user_metadata,
+            display_name: data.displayName?.trim(),
+            medical_school: data.medicalSchool?.trim(),
+            academic_stage: data.academicStage?.trim()
+          }
+        };
+        setUser(updatedUser as User);
+        return { success: true };
+      }
+      return { success: false, error: 'User is not authenticated.' };
+    }
+
+    try {
+      const { data: responseData, error } = await supabase.auth.updateUser({
+        data: {
+          display_name: data.displayName?.trim(),
+          medical_school: data.medicalSchool?.trim(),
+          academic_stage: data.academicStage?.trim()
+        }
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (responseData.user) {
+        setUser(responseData.user);
+      }
+      return { success: true };
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile settings.';
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Update account password
+  const updateUserPassword = async (password: string) => {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase is not configured yet.' };
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update password.';
+      return { success: false, error: errorMessage };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -308,7 +380,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signIn,
         signOut,
-        resendVerification
+        resendVerification,
+        updateUserProfile,
+        updateUserPassword
       }}
     >
       {children}

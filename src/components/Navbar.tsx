@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bookmark, Menu, X, Mail, LogIn, UserPlus, LogOut, User } from 'lucide-react';
+import { Search, Bookmark, Menu, X, Mail, LogOut, Sun, Moon, Settings, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface NavbarProps {
   currentTab: string;
@@ -8,7 +9,8 @@ interface NavbarProps {
   onOpenSearch: () => void;
   onOpenBookmarks: () => void;
   bookmarksCount: number;
-  onOpenAuth: (mode: 'login' | 'signup') => void;
+  onOpenAuth?: (mode: 'login' | 'signup') => void;
+  onOpenSettings: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -17,11 +19,44 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSearch,
   onOpenBookmarks,
   bookmarksCount,
-  onOpenAuth
+  onOpenAuth,
+  onOpenSettings
 }) => {
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
+  // Extract student initials for the avatar badge
+  const getInitials = () => {
+    const displayName = user?.user_metadata?.display_name;
+    if (displayName && displayName.trim()) {
+      const parts = displayName.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+      }
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return 'MR';
+  };
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('#profile-dropdown-container')) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    if (profileDropdownOpen) {
+      document.addEventListener('mousedown', handleOutsideClick);
+      return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }
+  }, [profileDropdownOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,8 +118,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header
       className={`sticky top-0 z-40 w-full transition-all duration-200 ${
         scrolled
-          ? 'bg-[#102C3A]/95 backdrop-blur-md border-b border-[#183C4F] shadow-sm'
-          : 'bg-[#102C3A] border-b border-[#183C4F]'
+          ? 'bg-[#102C3A]/95 dark:bg-[#091720]/95 backdrop-blur-md border-b border-[#183C4F] dark:border-[#142B38] shadow-sm'
+          : 'bg-[#102C3A] dark:bg-[#091720] border-b border-[#183C4F] dark:border-[#142B38]'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -174,46 +209,126 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Mail className="w-4 h-4" />
             </a>
 
-            {/* Authentication Buttons (Desktop) */}
-            <div className="hidden md:flex items-center gap-2 border-l border-[#183C4F] pl-2.5 ml-1">
-              {user ? (
-                <div className="flex items-center gap-2">
-                  <div
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#183C4F]/70 text-slate-200 text-xs font-medium border border-slate-700/70 max-w-[150px] truncate"
-                    title={user.email || 'Authenticated User'}
-                  >
-                    <User className="w-3.5 h-3.5 text-[#A8E6CF] shrink-0" />
-                    <span className="truncate">{user.email ? user.email.split('@')[0] : 'Account'}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => signOut()}
-                    className="p-2 text-slate-300 hover:text-red-400 hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                    aria-label="Log Out"
-                    title="Log Out of MedRise"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
+            {/* Dark Mode Toggle (Desktop) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-2.5 text-slate-100 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+              title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-300 transition-transform duration-200 hover:rotate-45" />
               ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => onOpenAuth('login')}
-                    className="px-3 py-2 text-xs font-semibold text-slate-200 hover:text-white hover:bg-[#183C4F] rounded-lg transition-colors cursor-pointer min-h-[44px] flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
-                  >
-                    Log In
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => onOpenAuth('signup')}
-                    className="px-3.5 py-2 text-xs font-bold text-[#102C3A] bg-[#A8E6CF] hover:bg-[#95d6bf] rounded-lg transition-colors cursor-pointer min-h-[44px] flex items-center shadow-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
-                  >
-                    Sign Up
-                  </button>
-                </>
+                <Moon className="w-4 h-4 text-slate-200 transition-transform duration-200 hover:-rotate-12" />
               )}
-            </div>
+            </button>
+
+            {/* Authentication / Profile Avatar (Desktop) - Only rendered when logged in */}
+            {user && (
+              <div className="hidden md:flex items-center gap-2 border-l border-[#183C4F] pl-2.5 ml-1">
+                <div id="profile-dropdown-container" className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center gap-2 p-1 pl-1.5 pr-2 rounded-full hover:bg-[#183C4F] transition-all cursor-pointer border border-[#183C4F] hover:border-[#A8E6CF]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+                    aria-expanded={profileDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label="User profile and account settings"
+                  >
+                    {/* Gradient Initials Avatar */}
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#176B65] to-[#11534E] border border-[#A8E6CF]/40 flex items-center justify-center text-[#A8E6CF] font-bold text-xs shadow-xs">
+                        {getInitials()}
+                      </div>
+                      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-[#102C3A]" />
+                    </div>
+
+                    <span className="text-xs font-semibold text-slate-200 max-w-[110px] truncate">
+                      {user.user_metadata?.display_name || user.email?.split('@')[0]}
+                    </span>
+
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${profileDropdownOpen ? 'rotate-180 text-[#A8E6CF]' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu Card */}
+                  {profileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white dark:bg-[#102430] border border-slate-200 dark:border-[#1E3D4F] shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                      {/* Identity Header */}
+                      <div className="p-4 border-b border-slate-100 dark:border-[#1E3D4F] bg-slate-50/70 dark:bg-[#0D202B]">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#176B65] to-[#11534E] border border-[#A8E6CF]/30 flex items-center justify-center text-[#A8E6CF] font-bold text-sm shadow-xs shrink-0">
+                            {getInitials()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-[#102C3A] dark:text-white truncate">
+                              {user.user_metadata?.display_name || 'Medical Student'}
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              {user.email}
+                            </p>
+                            {user.user_metadata?.medical_school && (
+                              <p className="text-[10px] text-[#176B65] dark:text-[#A8E6CF] font-medium truncate mt-0.5">
+                                {user.user_metadata.medical_school}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dropdown Menu Items */}
+                      <div className="p-1.5 space-y-0.5 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            onOpenSettings();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-[#EEF9F5] dark:hover:bg-[#153243] hover:text-[#176B65] dark:hover:text-[#A8E6CF] transition-colors cursor-pointer text-left font-medium"
+                        >
+                          <Settings className="w-4 h-4 text-[#176B65] dark:text-[#A8E6CF]" />
+                          <span>Account Settings</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            onOpenBookmarks();
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-[#EEF9F5] dark:hover:bg-[#153243] hover:text-[#176B65] dark:hover:text-[#A8E6CF] transition-colors cursor-pointer text-left font-medium"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Bookmark className="w-4 h-4 text-[#176B65] dark:text-[#A8E6CF]" />
+                            <span>Saved Bookmarks</span>
+                          </div>
+                          {bookmarksCount > 0 && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#176B65] text-white">
+                              {bookmarksCount}
+                            </span>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Divider & Log Out */}
+                      <div className="p-1.5 pt-0 border-t border-slate-100 dark:border-[#1E3D4F]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            signOut();
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer text-left font-medium"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Log Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -244,7 +359,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         id="mobile-navigation-menu"
         role="navigation"
         aria-label="Mobile Navigation"
-        className={`lg:hidden absolute top-full left-0 right-0 z-40 bg-[#102C3A] border-b border-[#183C4F] shadow-2xl transition-all duration-200 ease-out ${
+        className={`lg:hidden absolute top-full left-0 right-0 z-40 bg-[#102C3A] dark:bg-[#091720] border-b border-[#183C4F] dark:border-[#142B38] shadow-2xl transition-all duration-200 ease-out ${
           mobileMenuOpen
             ? 'opacity-100 translate-y-0 visible pointer-events-auto'
             : 'opacity-0 -translate-y-2 invisible pointer-events-none'
@@ -285,58 +400,55 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </div>
 
-          {/* Mobile Authentication Section */}
-          <div className="pt-2 border-t border-[#183C4F]/70">
-            {user ? (
+          {/* Mobile Authentication Section - Only rendered when logged in */}
+          {user && (
+            <div className="pt-2 border-t border-[#183C4F]/70">
               <div className="space-y-2">
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#0E2430] border border-[#183C4F] text-xs text-slate-200">
-                  <div className="w-7 h-7 rounded-lg bg-[#176B65] flex items-center justify-center text-[#A8E6CF] font-bold shrink-0">
-                    <User className="w-4 h-4" />
+                <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-[#0E2430] border border-[#183C4F] text-xs text-slate-200">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#176B65] to-[#11534E] border border-[#A8E6CF]/30 flex items-center justify-center text-[#A8E6CF] font-bold text-xs shrink-0">
+                    {getInitials()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Logged in</p>
-                    <p className="font-semibold text-white truncate">{user.email}</p>
+                    <p className="font-bold text-white truncate text-xs">
+                      {user.user_metadata?.display_name || 'Medical Student'}
+                    </p>
+                    <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                    {user.user_metadata?.medical_school && (
+                      <p className="text-[10px] text-[#A8E6CF] truncate mt-0.5">
+                        {user.user_metadata.medical_school}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    signOut();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-950/70 text-red-200 border border-red-800/40 text-xs font-semibold min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log Out of MedRise</span>
-                </button>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenSettings();
+                    }}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#183C4F] hover:bg-[#1f4c63] text-white text-xs font-semibold border border-slate-700 min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+                  >
+                    <Settings className="w-4 h-4 text-[#A8E6CF]" />
+                    <span>Settings</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut();
+                    }}
+                    className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-950/40 hover:bg-red-950/70 text-red-200 border border-red-800/40 text-xs font-semibold min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAuth('login');
-                  }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#183C4F] hover:bg-[#1f4c63] text-white text-xs font-semibold border border-slate-700 min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
-                >
-                  <LogIn className="w-4 h-4 text-[#A8E6CF]" />
-                  <span>Log In</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAuth('signup');
-                  }}
-                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#A8E6CF] hover:bg-[#95d6bf] text-[#102C3A] text-xs font-bold min-h-[44px] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>Sign Up</span>
-                </button>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Quick Hub Shortcuts inside Mobile Menu */}
           <div className="pt-2 grid grid-cols-2 gap-2">
@@ -361,6 +473,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Bookmark className="w-3.5 h-3.5 text-[#A8E6CF]" />
               <span>Saved Items ({bookmarksCount})</span>
+            </button>
+          </div>
+
+          {/* Theme Toggle inside Mobile Menu */}
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#183C4F]/70 hover:bg-[#183C4F] text-slate-100 text-xs font-medium border border-slate-700/70 min-h-[44px] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#A8E6CF]"
+              aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            >
+              <span className="flex items-center gap-2">
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-300" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-200" />
+                )}
+                <span>Theme Mode</span>
+              </span>
+              <span className="text-[#A8E6CF] font-semibold text-xs capitalize flex items-center gap-1.5">
+                <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#A8E6CF]" />
+              </span>
             </button>
           </div>
 
